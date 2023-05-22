@@ -37,7 +37,7 @@ function Sidebar() {
 				<li><a href="/ApplicationStatus" className={splitLocation[1] === "ApplicationStatus" ? "active-anchor" : ""}> <i className="fa fa-flag" aria-hidden="true"></i> Application Status</a></li>
 				<li><a href="/Policy" className={splitLocation[1] === "Policy" ? "active-anchor" : ""}><i className="fa fa-question-circle" aria-hidden="true" ></i> Policy and Guideline</a></li>
 				{/* <li><a href="/Guideline" className={splitLocation[1] === "Guideline" ? "active-anchor" : ""}><i className="fa fa-info-circle" aria-hidden="true"></i> Guideline</a></li> */}
-				<li><a href="/DocumentUploaded" className={splitLocation[1] === "DocumentUploaded" ? "active-anchor" : ""}><i className="fa fa-file-text" aria-hidden="true"></i> Documents to be Uploaded</a></li>
+				
 				<li><a href="/ProductList" className={splitLocation[1] === "ProductList" ? "active-anchor" : ""}> <i className="fa fa-list" aria-hidden="true"></i> Product List</a></li>
 				<li><a href="/EnlistedVendor" className={splitLocation[1] === "EnlistedVendor" ? "active-anchor" : ""}><i className="fa fa-users" aria-hidden="true"></i> Enlisted Vendor</a></li>
 			</ul>

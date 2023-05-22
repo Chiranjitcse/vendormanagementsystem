@@ -4,12 +4,15 @@ import React , { useEffect, useRef, useState }from 'react';
  import Sidebar from '../Sidebar/Sidebar';
  import Footer from '../Footer/Footer';
  import Smalltag from "../SmallTag/smalltag.js"
-
+ import axios from 'axios';
 function NewApplication()
 {
 	const [categoryFlag, setsCategoryFlag] = React.useState(false)
 	const [productFlag, setsProductFlag] = React.useState(false)
 	const [afterSaleService, setAfterSaleService] = useState([])
+	const [registrationno , setregistrationno] = React.useState('')
+
+	
 	const [row, setRow] = useState(0)
 	const [prFiles, setprFiles] = useState({
 		statutory:[],
@@ -112,17 +115,19 @@ function NewApplication()
 	const [userEmail, setUserEmail] = React.useState('');
 	const [userMobileNo, setuserMobileNo] = React.useState('');
 	
+	const userName = React.useState(localStorage.getItem("name"));
 
 	
 	const [userSelect, setUserSelect] = React.useState(false);
 	const onSelectClick = () => setShowResults(true)
 	//setUserInput('');
 
-
+	//setUsername(localStorage.getItem("name"))
 // //////////////////////////////////////////////
 	const cname = useRef()
 	const mobNum = useRef()
-	const [contactArr, setContactArr] = useState([])
+	const [contactArr, setContactArr] = useState([]);
+	const [ProductList, setProductList] = useState([]);
 	const [gst, setgst] = useState("")
 	const [pan, setpan] = useState("")
 	const addContact = ()=>{
@@ -307,15 +312,44 @@ function NewApplication()
 	////////////////////////////////////////////////////////////////////////////
 	const OnSelectProduct=()=>
 	{
+
+		
+			
 		//debugger;
 		//setUserSelect(event);
 		setshowResistrationNo(true);
-		setUserInput('Alok Nayak');
-		setUserEmail('alok@gmail.com');
-		setuserMobileNo('9874563210');
+		setregistrationno(localStorage.getItem("registrationNo"))
+		setUserInput(localStorage.getItem("name"));
+		setUserEmail(localStorage.getItem("email"));
+		setuserMobileNo(localStorage.getItem("mobileno"));
+		
+
 	}
 
-	
+	 
+	const onChangeCategory=()=>
+	{
+		
+			setsCategoryFlag(true);
+			axios.post('http://192.168.22.61/VendorSys/api/v1/products/{prodCategory}?prodCategory='+document.getElementById('category').value).then(response => {
+		debugger;
+			if(response.data.code==0)
+			{
+				setProductList(response.data.content);
+				
+
+			}else{
+				
+			}
+
+		
+	}).catch(error => {
+		//setLoading(false);
+		// console.log(error.data);
+		//setError("Wrong credentials. Please check and try again");
+	});
+		
+	}
 
 	const onChangenature=()=>
 	{
@@ -340,7 +374,7 @@ const RegistrationNo=()=>
 
 	<div className='from-each-div mt-2'>
 <p className='from-label-p'>Registration No</p>
-<input value="Reg/23/00000001" type="text" className="form-control" readOnly />
+<input value={registrationno} type="text" className="form-control" readOnly />
 							</div>
 
 )
@@ -385,24 +419,22 @@ const CategoryofunitFileUpload=()=>
 					<div className="row">
 						<div className="col-md-12">
 							<h2 className='text-center mb-4'>New Application</h2>
-							<b className='vend-name'> Vendor Name : Alok Nayak</b>
+							<b className='vend-name'> Vendor Name : {userName}</b>
 							
 							<div className='vendor-box'>
-							<h6>After Submission of the form you can download the full filled up form from <a href="#"><b>here</b></a></h6>
-							<h6 className='mb-4'>If you already have applied for Any Product before, Click <button className='Enquiry-btn ml-auto mt-1'>Fill My Form</button> button to fill the form for another product.</h6>
+							{/* <h6>After Submission of the form you can download the full filled up form from <a href="#"><b>here</b></a></h6>
+							<h6 className='mb-4'>If you already have applied for Any Product before, Click <button className='Enquiry-btn ml-auto mt-1'>Fill My Form</button> button to fill the form for another product.</h6> */}
 							
 							<div className='row'>
 							<div className='col-md-4'> 
 							<div className='from-each-div mb-0'>
 							<p className='from-label-p'>Select the product category</p>
 							<select className="form-control" 
-							name='category'
-								onChange={()=>{
-									setsCategoryFlag(true)
-								}}>
+							name='category' id='category'
+								onChange={onChangeCategory}>
 								<option>--Select--</option>
-								<option>Civil</option>
-								<option>Mechanical</option>
+								<option value='C'>Civil</option>
+								<option value='M'>Mechanical</option>
 							</select>
 							</div>	
 							</div>
@@ -410,11 +442,14 @@ const CategoryofunitFileUpload=()=>
 
 							<div className='from-each-div mb-0'>
 <p className='from-label-p'>Applying for which Product</p>
+
+
 <select className="form-control" onChange={()=>{setsProductFlag(true)}}
 	name='product'> 
 								<option>--Select--</option>
-								<option value="Vertical Turbine Pump">Vertical Turbine Pump</option>
-								<option value="Horizontal/Vertical Centrifugal Pump">Horizontal/Vertical Centrifugal Pump </option>
+								{
+       ProductList.map((result)=>(<option title={result.productCode}>{result.productDesc}</option>))
+      }
 							</select>
 							
 							</div>
@@ -533,18 +568,7 @@ const CategoryofunitFileUpload=()=>
 						
 						</div>
 						{ showcategoryofunit ? <CategoryofunitFileUpload /> : null }
-						<div className="col-md-4">
-							<div className="from-each-div">
-							<p className="from-label-p">GST Registration Number</p>
-							{/* <select className="form-control">
-								<option>Name of State/UT</option>
-								<option>State-wise GSTIN</option>
-							</select> */}
-							<input type='text' name='gst' onChange={handleGST} value={gst} className="form-control"/>
-							{Approval.gst &&
-							<input type="file" name='gstFile' multiple className="form-control" />}
-						</div>
-						</div>
+						
 						<div className="col-md-4">
 							<div className="from-each-div">
 							<p className="from-label-p">Pan <div className="tooltip"><i class="fa fa-exclamation-circle" aria-hidden="true"></i>
@@ -602,6 +626,18 @@ const CategoryofunitFileUpload=()=>
 							<option value="UT">Uttarakhand</option>
 							<option value="WB">West Bengal</option>
 							</select>
+						</div>
+						</div>
+						<div className="col-md-4">
+							<div className="from-each-div">
+							<p className="from-label-p">GST Registration Number</p>
+							{/* <select className="form-control">
+								<option>Name of State/UT</option>
+								<option>State-wise GSTIN</option>
+							</select> */}
+							<input type='text' name='gst' onChange={handleGST} value={gst} className="form-control"/>
+							{Approval.gst &&
+							<input type="file" name='gstFile' multiple className="form-control" />}
 						</div>
 						</div>
 						<div className="col-md-4">
@@ -814,7 +850,7 @@ const CategoryofunitFileUpload=()=>
 						
 							<div className="col-md-4">
 							<div className="from-each-div">
-							<p className="from-label-p">Whether in-House Testing Labs?</p>
+							<p className="from-label-p">Whether in-House Testing Labs?<select className='yesno'><option>Yes</option><option>No</option></select></p>
 							<div className='tag-input-container'>
 								<div className='enterTag-div'>
 								<button className='up-btn payment-btn ' 
@@ -838,53 +874,24 @@ const CategoryofunitFileUpload=()=>
 						</div>
 						<div className="col-md-4">
 							<div className="from-each-div">
-							<p className="from-label-p">Name of in-house tests Raw Material</p>
+							<p className="from-label-p">Name of in-house tests carried out On Raw Material</p>
 							<input type="text"className="form-control" title='Name of in-house tests carried out on raw material' />
 						</div>
 						</div>
 						<div className="col-md-4">
 							<div className="from-each-div">
-							<p className="from-label-p">Name of in-house tests Product</p>
+							<p className="from-label-p">Name of in-house tests carried out on product</p>
 							<input type="text"className="form-control" title='Name of in-house tests carried out on products' />
 						</div>
 						</div>
 						
-						<div className="col-md-4">
+						<div className="col-md-4 d-none">
 							<div className="from-each-div">
 							<p className="from-label-p">Details of Tests carried out</p>
 							{/* <input type="text"className="form-control" title='Details of Tests carried out through outsourced Labs ' /> */}
 						</div>
 						</div>
-						<div className="col-md-4">
-							<div className="from-each-div">
-							<p className="from-label-p">Test carried out from outsourced Labs?</p>
-							<div className='tag-input-container'>
-								<div className='enterTag-div'>
-								<button className='up-btn payment-btn ' 
-									variant="contained"
-									>
-									<span className='upload'>
-										UPLOAD <i class="fa fa-upload" aria-hidden="true"></i>
-									</span>
-									<input type="file" name='outsrclab' onChange={e=>handletestFileChange(e)} multiple className="form-control mf-file-input" title='Details of Engineers & other technical staffs engaged to be attached as separate sheet ' />
-									</button>
-								</div>
-								<div className='tag-showcase-box'>
-									{
-									testFiles.outsrclab.map((file, i)=>(
-										<Smalltag fontAwsmIcon={"fa-solid fa-file"} lable={file.name} key={i}/>
-									))
-									}
-								</div>
-                        </div>
-						</div>
-						</div>
-						<div className="col-md-4">
-							<div className="from-each-div">
-							<p className="from-label-p">Labs are accredited by</p>
-							<input type="text"className="form-control" title='Whether the outsourced Labs are accredited by NABL/Other Govt Institution?' />
-						</div>
-						</div>
+						
 
 						<div className="col-md-12">
 							<div className="from-each-div">
@@ -957,6 +964,38 @@ const CategoryofunitFileUpload=()=>
 								</tbody>
 							</table>
 						</div>
+						<div className='row mb-4'>
+						<div className="col-md-4">
+							<div className="from-each-div">
+							<p className="from-label-p">Test carried out from outsourced Labs? <select class="yesno"><option>Yes</option><option>No</option></select></p>
+							<div className='tag-input-container'>
+								<div className='enterTag-div'>
+								<button className='up-btn payment-btn ' 
+									variant="contained"
+									>
+									<span className='upload'>
+										UPLOAD <i class="fa fa-upload" aria-hidden="true"></i>
+									</span>
+									<input type="file" name='outsrclab' onChange={e=>handletestFileChange(e)} multiple className="form-control mf-file-input" title='Details of Engineers & other technical staffs engaged to be attached as separate sheet ' />
+									</button>
+								</div>
+								<div className='tag-showcase-box'>
+									{
+									testFiles.outsrclab.map((file, i)=>(
+										<Smalltag fontAwsmIcon={"fa-solid fa-file"} lable={file.name} key={i}/>
+									))
+									}
+								</div>
+                        </div>
+						</div>
+						</div>
+						<div className="col-md-4">
+							<div className="from-each-div">
+							<p className="from-label-p">Name of test carried out from out source lab</p>
+							<input type="text"className="form-control" title='Whether the outsourced Labs are accredited by NABL/Other Govt Institution?' />
+						</div>
+						</div>
+						</div>
 						</div>
 
 						<div className="col-md-12">
@@ -1025,7 +1064,73 @@ const CategoryofunitFileUpload=()=>
 							</table>
 						</div>
 						</div>
-						
+						<div className='col-md-12'>
+							<div className='row mt-3'>
+								<div className='col-md-7'>
+								<p className="from-label-p">System of NCR (Non-Conformity Report)Disposal and details of Corrective Actions (Separate Sheet to be attached along withnof NCR. if an) <select class="yesno"><option>Yes</option><option>No</option></select></p>
+								</div>
+								<div className='col-md-5'>
+								<div className="from-each-div"><input type="file" className="form-control" /></div>
+								</div>
+							</div>
+							<div className='row mt-3'>
+								<div className='col-md-7'>
+								<p className="from-label-p">System of Identification & Traceability of materials & processed components (Separate Sheet to be attached)<select class="yesno"><option>Yes</option><option>No</option></select></p>
+								</div>
+								<div className='col-md-5'>
+								<div className="from-each-div"><input type="file" className="form-control" /></div>
+								</div>
+							</div>
+							<div className='row mt-3'>
+								<div className='col-md-7'>
+								<p className="from-label-p">Testing & Inspection carried out as per STI (System of Testing and Inspection) of related 15 Standard International Standards (Procedure & Records in this regard to be attached to seperate sheets(s))<select class="yesno"><option>Yes</option><option>No</option></select></p>
+								</div>
+								<div className='col-md-5'>
+								<div className="from-each-div"><input type="file" className="form-control" /></div>
+								</div>
+							</div>
+							<div className='row mt-3'>
+								<div className='col-md-7'>
+								<p className="from-label-p">BIS/International License Numberr(Copy of the certificate(s) to be attached)</p>
+								</div>
+								<div className='col-md-5'>
+									<div className='row'>
+										<div className='col-md-5'>
+										<div className="from-each-div"><input type="text" className="form-control" /></div>
+										</div>
+										<div className='col-md-7'>
+										<div className="from-each-div"><input type="file" className="form-control" /></div>
+										</div>
+									</div>
+								
+								</div>
+							</div>
+							<div className='row mt-3'>
+								<div className='col-md-7'>
+								<p className="from-label-p">Validity of License</p>
+								</div>
+								<div className='col-md-5'>
+								<div className="from-each-div"><input type="text" className="form-control" /></div>
+								</div>
+							</div>
+							
+							<div className='row mt-3'>
+								<div className='col-md-7'>
+								<p className="from-label-p">ISO-9001:2005 Certificate Quality Management System] (if any)(Copy of the certificate to be attached)<select class="yesno"><option>Yes</option><option>No</option></select></p>
+								</div>
+								<div className='col-md-5'>
+								<div className="from-each-div"><input type="file" className="form-control" /></div>
+								</div>
+							</div>
+							<div className='row mt-3'>
+								<div className='col-md-7'>
+								<p className="from-label-p">ISO-17025 Certificate [Testing and Calibration] (if any) Copy of the certificate to be attached)<select class="yesno"><option>Yes</option><option>No</option></select></p>
+								</div>
+								<div className='col-md-5'>
+								<div className="from-each-div"><input type="file" className="form-control" /></div>
+								</div>
+							</div>
+						</div>
 						<div className="col-md-12 text-right">
 							<button className="Enquiry-btn mr-3 mt-2 bg-danger color-wh-important cus-sr-button">Reset</button>
 							<button className="Enquiry-btn ml-auto mt-2 bg-important color-wh-important cus-sr-button">Save</button>
@@ -1055,9 +1160,9 @@ const CategoryofunitFileUpload=()=>
 										
 									</tr>
 									<tr>
-										<td>Year 1</td>
-										<td>Year 2</td>
-										<td>Year 3</td>
+										<td>Year 1 <select class="yesno w-year"><option>2018-2019</option><option>2019-2020</option><option>2020-2021</option><option>2021-2021</option><option>2022-2023</option></select></td>
+										<td>Year 2 <select class="yesno w-year"><option>2018-2019</option><option>2019-2020</option><option>2020-2021</option><option>2021-2021</option><option>2022-2023</option></select></td>
+										<td>Year 3 <select class="yesno w-year"><option>2018-2019</option><option>2019-2020</option><option>2020-2021</option><option>2021-2021</option><option>2022-2023</option></select></td>
 										
 									</tr>
 								</thead>
@@ -1248,15 +1353,15 @@ const CategoryofunitFileUpload=()=>
 									
 									marketingNetwork.map((item, index)=>(
 										<div className='row myrow' key={index}>
-											<div className='col-md-4'>
-											<div className="from-each-div"><p className="from-label-p">Dealers/Distributors </p>
+											<div className='col-md-3'>
+											<div className="from-each-div"><p className="from-label-p">Dealers/Distributors Name </p>
 											<input type="text"
 											name={'distributor'}
 											onChange={(e)=>{handleMarketingNetworkChange(e,index)}}
 											value={marketingNetwork[index].distributor}
 											className="form-control"/></div>
 											</div>
-											<div className='col-md-4'>
+											<div className='col-md-3'>
 											<div className="from-each-div"><p className="from-label-p">Location</p>
 											<input type="text"
 											name={'location'}
@@ -1265,7 +1370,13 @@ const CategoryofunitFileUpload=()=>
 											className="form-control" /></div>
 											</div>
 											<div className='col-md-3'>
-											<div className="from-each-div"><p className="from-label-p">Communication Details</p>
+											<div className="from-each-div"><p className="from-label-p">Address</p>
+											<input type="text"
+											name={'location'}
+											className="form-control" /></div>
+											</div>
+											<div className='col-md-2'>
+											<div className="from-each-div"><p className="from-label-p">Mobile</p>
 											<input type="text"
 											name={'communicationDetail'} 
 											onChange={(e)=>{handleMarketingNetworkChange(e,index)}}
@@ -1299,8 +1410,8 @@ const CategoryofunitFileUpload=()=>
 
                         <div id="faq6" className="collapse" aria-labelledby="faqhead6" data-parent="#faq">
                             <div className="card-body">
-								<div className="from-each-div cenNum-div-box">
-									<p className="from-label-p cenNum-p">Number of After Sales Service Centers </p>
+								<div className="from-each-div cenNum-div-box ">
+									<p className="from-label-p cenNum-p"><b>Number of After Sales Service Centers </b></p>
 									<input type="text" 
 									onChange={handleRowChange}
 									value={row}
@@ -1311,8 +1422,8 @@ const CategoryofunitFileUpload=()=>
 								{
 									afterSaleService.map((item, index)=>(
 								<div className='row' key={index}>
-									<div className='col-md-4'>
-										<div className="from-each-div"><p className="from-label-p">Center Name </p>
+									<div className='col-md-2'>
+										<div className="from-each-div"><p className="from-label-p">Service Center Name </p>
 										<input type="text" className="form-control" title='Number of After Sales Service Centers
 										available in India '
 										name='centre'
@@ -1320,26 +1431,90 @@ const CategoryofunitFileUpload=()=>
 										value={afterSaleService[index].centre}
 										/></div>
 									</div>
-									<div className='col-md-4'>
-										<div className="from-each-div"><p className="from-label-p">Location and Communication Details</p>
+									<div className='col-md-3'>
+										<div className="from-each-div"><p className="from-label-p">Address</p>
 										<input type="text" className="form-control" title='Location and Communication Details(Address, Telephone, Mobile Numbers, E-mail etc) of After Sales Service Centers'
 										name='location'
 										onChange={e=>handleAfterSaleServiceChancge(e, index)}
 										value={afterSaleService[index].location}
 										/></div>
 									</div>
-									<div className='col-md-4'>
+									<div className='col-md-2'>
+										<div className="from-each-div"><p className="from-label-p">Mobile No</p>
+										<input type="text" className="form-control"
+										/></div>
+									</div>
+									<div className='col-md-2'>
+										<div className="from-each-div"><p className="from-label-p">land No</p>
+										<input type="text" className="form-control"
+										/></div>
+									</div>
+									<div className='col-md-3'>
+										<div className="from-each-div"><p className="from-label-p">Email Id</p>
+										<input type="text" className="form-control"
+										/></div>
+									</div>
+									{/* <div className='col-md-4'>
 										<div className="from-each-div"><p className="from-label-p">Details of Floating Service Units,</p>
 										<input type="text" className="form-control" title='Details of Floating Service Units, if available in West Bengal '
 										name='floatingServiceUnits'
 										onChange={e=>handleAfterSaleServiceChancge(e, index)}
 										value={afterSaleService[index].floatingServiceUnits}
 										/></div>
-									</div>
+									</div> */}
 								</div>
 									))
 								}
-								<div className="col-md-12 text-right">
+
+<div className="from-each-div cenNum-div-box mt-4">
+									<p className="from-label-p cenNum-p"><b>Number of Floating service Unit </b></p>
+									<input type="text" 
+									onChange={handleRowChange}
+									value={row}
+									className="form-control col-md-1" 
+									title='Number of After Sales Service Centers
+									available in India '/>
+								</div>
+								{
+									afterSaleService.map((item, index)=>(
+										<div className='row' key={index}>
+										<div className='col-md-2'>
+											<div className="from-each-div"><p className="from-label-p">Service Center Name </p>
+											<input type="text" className="form-control" title='Number of After Sales Service Centers
+											available in India '
+											name='centre'
+											onChange={e=>handleAfterSaleServiceChancge(e, index)}
+											value={afterSaleService[index].centre}
+											/></div>
+										</div>
+										<div className='col-md-3'>
+											<div className="from-each-div"><p className="from-label-p">Address</p>
+											<input type="text" className="form-control" title='Location and Communication Details(Address, Telephone, Mobile Numbers, E-mail etc) of After Sales Service Centers'
+											name='location'
+											onChange={e=>handleAfterSaleServiceChancge(e, index)}
+											value={afterSaleService[index].location}
+											/></div>
+										</div>
+										<div className='col-md-2'>
+											<div className="from-each-div"><p className="from-label-p">Mobile No</p>
+											<input type="text" className="form-control"
+											/></div>
+										</div>
+										<div className='col-md-2'>
+											<div className="from-each-div"><p className="from-label-p">land No</p>
+											<input type="text" className="form-control"
+											/></div>
+										</div>
+										<div className='col-md-3'>
+											<div className="from-each-div"><p className="from-label-p">Email Id</p>
+											<input type="text" className="form-control"
+											/></div>
+										</div>
+										
+									</div>
+									))
+								}
+								<div className="col-md-12 text-right p-0">
 									<button className="Enquiry-btn mr-3 mt-2 bg-danger color-wh-important cus-sr-button">Reset</button>
 									<button 
 									className="Enquiry-btn ml-auto mt-2 bg-important color-wh-important cus-sr-button"
@@ -1359,49 +1534,60 @@ const CategoryofunitFileUpload=()=>
                         <div id="faq7" className="collapse" aria-labelledby="faqhead7" data-parent="#faq">
                             <div className="card-body">
 							<div className='row'>
-								<div className='col-md-4'>
-									<div className="from-each-div"><p className="from-label-p">Approval of Statutory</p>
-									<input onClick={handleRadioClick} type='radio' name='statutory' value={true}/><label className='ys-no'>Yes</label>
+								<div className='col-md-12'>
+									<div className="from-each-div">
+									<div className='d-inline-block'><p className="from-label-p"><b>Approval of Statutory</b></p></div>
+									<div className='d-inline-block ml-3'>
+										<input onClick={handleRadioClick} type='radio' name='statutory' value={true}/><label className='ys-no'>Yes</label>
 									<input onClick={handleRadioClick} type='radio' name='statutory' value={false}/><label className='ys-no'>No</label>
+									</div>
 									{Approval.statutory && 
-									<input name="statutory" onChange={e=>handleprFileChange(e)} type="file" multiple className="form-control" title='Approval of Statutory and/or other Inspection Agency (Copies to be attached)'/>}</div>
+									<input name="statutory" onChange={e=>handleprFileChange(e)} type="file" multiple className="form-control d-inline-block w-auto" title='Approval of Statutory and/or other Inspection Agency (Copies to be attached)'/>}</div>
 								</div>
 
-									<div className='col-md-4'>
-									<div className="from-each-div"><p className="from-label-p">Whether enlisted as approved</p>
+									<div className='col-md-12'>
+									<div className="from-each-div"><div className='d-inline-block'><p className="from-label-p"><b>Whether enlisted as approved</b></p></div>
+									<div className='d-inline-block ml-3'>
 									<input onClick={handleRadioClick} type='radio' name='WhetherEnlisted' value={true}/><label className='ys-no'>Yes</label>
-									<input onClick={handleRadioClick} type='radio' name='WhetherEnlisted' value={false}/><label className='ys-no'>No</label>
-									{Approval.WhetherEnlisted && <input name='WhetherEnlisted' onChange={e=>handleprFileChange(e)} type="file"  multiple className="form-control" title='Whether enlisted as approved Vendor in any Govt, Govt Undertaking or in Public Sector bodies(Copies such approval to be attached)' />}</div>
+									<input onClick={handleRadioClick} type='radio' name='WhetherEnlisted' value={false}/><label className='ys-no'>No</label></div>
+									{Approval.WhetherEnlisted && <input name='WhetherEnlisted' onChange={e=>handleprFileChange(e)} type="file"  multiple className="form-control d-inline-block w-auto" title='Whether enlisted as approved Vendor in any Govt, Govt Undertaking or in Public Sector bodies(Copies such approval to be attached)' />}</div>
 									</div>
 
-									<div className='col-md-4'>
-									<div className="from-each-div"><p className="from-label-p">Performance Reports from clients </p>
+									<div className='col-md-12'>
+									<div className="from-each-div"><div className='d-inline-block'><p className="from-label-p"><b>Performance Reports from clients </b></p></div>
+									<div className='d-inline-block ml-3'>
 									<input onClick={handleRadioClick} type='radio' name='performanceReports' value={true}/><label className='ys-no'>Yes</label>
 									<input onClick={handleRadioClick} type='radio' name='performanceReports' value={false}/><label className='ys-no'>No</label>
+									</div>
+									
 									{Approval.performanceReports && 
-									<input type="file" name='performanceReports' onChange={e=>handleprFileChange(e)} multiple className="form-control" title='Performance Reports from clients (Copies such reports to be attached)'/>}</div>
+									<input type="file" name='performanceReports' onChange={e=>handleprFileChange(e)} multiple className="form-control d-inline-block w-auto" title='Performance Reports from clients (Copies such reports to be attached)'/>}</div>
 									</div>
 
-									<div className='col-md-4'>
-									<div className="from-each-div"><p className="from-label-p">Whether the ISI Certification Mark License ever suspended/cancelled :</p>
+									<div className='col-md-12'>
+									<div className="from-each-div"><div className='d-inline-block'><p className="from-label-p"><b>Whether the ISI Certification Mark License ever suspended/cancelled :</b></p></div>
+									<div className='d-inline-block ml-3'>
 									<input onClick={handleRadioClick} type='radio' name='isiCertification' value={true}/><label className='ys-no'>Yes</label>
 									<input onClick={handleRadioClick} type='radio' name='isiCertification' value={false}
 									/><label className='ys-no'>No</label>
+									</div>
 									{Approval.isiCertification && 
 									<textarea name='courtCases'
-									placeholder='Give details with reason.'  className="form-control" />}</div>
+									placeholder='Give details with reason.'  className="form-control d-inline-block w-auto align-top courtCases" />}</div>
 									</div>
 
-									<div className='col-md-4'>
-									<div className="from-each-div"><p className="from-label-p">Records of pending Court Cases/Litigations/Arbitration issues with WBPHED or any other Govt. organisations:</p>
+									<div className='col-md-12'>
+									<div className="from-each-div"><div className='d-inline-block'><p className="from-label-p"><b>Records of pending Court Cases/Litigations/Arbitration issues with WBPHED or any other Govt. organisations:</b></p></div>
+									<div className='d-inline-block ml-3'>
 									<input onClick={handleRadioClick} type='radio' name='courtCases' value={true}/><label className='ys-no'>Yes</label>
 									<input onClick={handleRadioClick} type='radio' name='courtCases' value={false}/><label className='ys-no'>No</label>
+									</div>
 									{Approval.courtCases &&
 									<textarea name='courtCases'
-									placeholder='Give detailes'  className="form-control" />}</div>
+									placeholder='Give detailes'  className="form-control d-inline-block w-auto align-top courtCases" />}</div>
 									</div>
 
-									<div className="col-md-12 text-right">
+									<div className="col-md-12 text-right p-0">
 							<button className="Enquiry-btn mr-3 mt-2 bg-danger color-wh-important cus-sr-button">Reset</button>
 							<button className="Enquiry-btn ml-auto mt-2 bg-important color-wh-important cus-sr-button" onClick={handleprFileSave}>Save</button>
 						</div>

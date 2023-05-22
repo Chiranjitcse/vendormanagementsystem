@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { useNavigate,useLocation, Link  } from 'react-router-dom';
 
 import axios from 'axios';
@@ -17,47 +17,90 @@ function Login()
 	const [otpFlag, setsotpFlag] = React.useState(false)
 	const [LoginFlag, setsLogFlag] = React.useState(true)
 
+	const [fromPeriod, setsFromPeriod] = React.useState('')
+
+	const [toPeriod, setsToPeriod] = React.useState('')
+	//setLoading(true);
+	axios.get('http://192.168.22.61/VendorSys/api/v1/PeriodMasterAllDetail').then(response => {
+		
+	let period=response.data.content;
+	setsFromPeriod(period[0].fromDate);
+	setsToPeriod(period[0].toDate);
+
+		//setLoading(false);
+		// setUserSession(response.data.content.token, response.data.content);
+		// localStorage.removeItem('method');
+		// localStorage.removeItem('freq');
+		// localStorage.removeItem('disease');
+		// localStorage.removeItem('medicines');
+		// localStorage.removeItem('medDetails');
+		// console.log(response.data);
+		//navigate('/Dashboard');
+	}).catch(error => {
+		//setLoading(false);
+		// console.log(error.data);
+		
+	});
+
 
     // const url = 'http://107.20.165.187:8080/ihealth/token/generate-token';
     // handle button click of login form
     const handleLogin = (event) => {
-		debugger;
+	
         event.preventDefault();
         setError(null);
-		if(document.getElementById('EmailOTP').value==12345 && document.getElementById('MobileOTP').value==12345)
-		{
-			navigate('/Dashboard');
-		}
-		else if(username.value=='wbphe@gmail.com' && password.value=='wbphe@gmail.com')
-		{
-			navigate('/DepartmentalDashboard');
-		}
-		else
-		{
-			//alert("Wrong credentials. Please check and try again");
-			setError("Wrong credentials. Please check and try again");
-		}
 		
-       // setLoading(true);
-        // axios.post('http://18.213.251.171:8080/ihealth-0.0.2/token/generate-token', { password: password.value, username: username.value }).then(response => {
-        //     setLoading(false);
-        //     setUserSession(response.data.content.token, response.data.content);
-        //     localStorage.removeItem('method');
-        //     localStorage.removeItem('freq');
-        //     localStorage.removeItem('disease');
-        //     localStorage.removeItem('medicines');
-        //     localStorage.removeItem('medDetails');
-        //     // console.log(response.data);
-        //     navigate('/Dashboard');
-        // }).catch(error => {
-        //     setLoading(false);
-        //     // console.log(error.data);
-        //     setError("Wrong credentials. Please check and try again");
-        // });
+		axios.post('http://192.168.22.61/VendorSys/token/api/otp/validate',{ emailId: email.value,emailIdOtp:document.getElementById('EmailOTP').value, mobileNo: username.value,mobileNoOtp:document.getElementById('MobileOTP').value}).then(response => {
+		debugger;
+			if(response.data.code==0)
+			{
+
+				localStorage.setItem("email",email.value);
+				localStorage.setItem("mobileno", username.value);
+				localStorage.setItem("name",response.data.content.name);
+				localStorage.setItem("offAddress",response.data.content.offAddress);
+				localStorage.setItem("userType",response.data.content.userType);
+				localStorage.setItem("registrationNo",response.data.content.registrationNo);
+				localStorage.setItem("token",response.data.content.token);
+				localStorage.setItem("webside",response.data.content.webside)
+				if(response.data.content.userType=='C')
+				{
+					navigate('/Dashboard');
+				}
+
+			}else{
+				setError(response.data.content.msg);
+			}
+
+		
+	}).catch(error => {
+		//setLoading(false);
+		// console.log(error.data);
+		setError("Wrong credentials. Please check and try again");
+	});
+
+
+
+
+		// if(document.getElementById('EmailOTP').value==localStorage.getItem("EmailOTP") && document.getElementById('MobileOTP').value==localStorage.getItem("MobileOTP"))
+		// {
+		// 	navigate('/Dashboard');
+		// }
+		// else if(username.value=='wbphe@gmail.com' && password.value=='wbphe@gmail.com')
+		// {
+		// 	navigate('/DepartmentalDashboard');
+		// }
+		// else
+		// {
+		// 	//alert("Wrong credentials. Please check and try again");
+		// 	setError("Wrong credentials. Please check and try again");
+		// }
+		
+      
     }
 const SendOtp=()=>
 {
-	debugger;
+	
 	var a=0;
 	if(username.value==''|| username.value==null)
 	{
@@ -76,9 +119,31 @@ alert('Please fill the email fields');
 		a=1;
 	}
 	if(a==1){
-		setsotpFlag(true)
-		setsLogFlag(false);
-		setError("Otp sent to your registered mobile number and email. check your mobile and email.");
+
+
+		axios.post('http://192.168.22.61/VendorSys/token/api/otp/generate',{ emailId: email.value, mobileNo: username.value}).then(response => {
+		
+			if(response.data.code==0)
+			{
+				//localStorage.setItem("MobileOTP",response.data.content.mobileNoOtp);
+				//localStorage.setItem("EmailOTP",response.data.content.emailIdOtp)
+				setsotpFlag(true)
+				setsLogFlag(false);
+				setError("Otp sent to your registered mobile number and email. check your mobile and email. Mobile OTP : "+response.data.content.mobileNoOtp +" Email OTP :  "+response.data.content.emailIdOtp);
+
+
+			}else{
+				setError(response.data.content.msg);
+			}
+
+		
+	}).catch(error => {
+		//setLoading(false);
+		// console.log(error.data);
+		setError("Wrong credentials. Please check and try again");
+	});
+
+		
 		
 	}
 	
@@ -86,12 +151,15 @@ alert('Please fill the email fields');
 const OtpResults = () => (
 	<div>
 	
-	<p>Enter Email OTP</p>
-										<input type="text" id="EmailOTP" className="bord-bottom-input"  name='EmailOTP' required />
+	
 					
 										<p>Enter Mobile OTP</p>
 										<input type="text" id="MobileOTP" className="bord-bottom-input"  name='MobileOTP' required />
-										<button className="book-now w-100 mt-3" id="getotpBtn">Login</button>
+										<p>Enter Email OTP</p>
+										<input type="text" id="EmailOTP" className="bord-bottom-input"  name='EmailOTP' required />
+										
+										
+										<button className="book-now w-100 mt-3" id="getotpBtn" onClick={handleLogin}>Login</button>
 						</div>
 						
   )
@@ -132,7 +200,7 @@ const OtpResults = () => (
 				<div className="col-md-4"></div>
 						<div className="col-md-4">
 
-						<form onSubmit={handleLogin}>
+						{/* <form onSubmit={handleLogin}> */}
 
 
 
@@ -160,11 +228,12 @@ const OtpResults = () => (
 									
 								</div>
 							</div>
-							</form>
-						</div>
+							{/* </form> */}
+							</div>
                         <div className="col-md-4"></div>
 					</div>
-
+					<marquee><span> Vendor Registration System will remain open for Vendors from {fromPeriod} to {toPeriod} </span></marquee>
+						
 <footer className="page-footer">
 		<div className="container">
 			<div className="row">

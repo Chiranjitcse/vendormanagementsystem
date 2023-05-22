@@ -681,3 +681,18 @@ b.vend-name {
   margin-right: 8px;
   font-size: 13px;
 }
+.yesno{
+  margin-left: 10px;
+  width: 50px;
+  border: 1px solid #ced4da;
+  border-radius: 2px;
+}
+.courtCases{
+  height: 50px !important;
+  font-size: 12px;
+  display: block !important;
+  width: 100% !important;
+}
+.w-year{
+  width: 100px;
+}
